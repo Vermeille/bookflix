@@ -1,0 +1,8 @@
+fastapi[standard]
+sqlalchemy
+jinja2
+python-multipart
+pyzbar
+Pillow
+passlib
+isbnlib

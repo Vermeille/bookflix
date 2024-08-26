@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Welcome, {{ user.username }}</h2>
+<a href="/borrow/">Borrow a Book</a>
+<a href="/return/">Return a Book</a>
+<a href="/logout">Logout</a>
+{% endblock %}
+
