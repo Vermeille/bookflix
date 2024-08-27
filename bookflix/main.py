@@ -134,7 +134,7 @@ def books(
         student: [book for book in books if book.borrowed_by == student]
         for student in students
     }
-    del books_by_student[None]
+    books_by_student.pop(None, None)
     return templates.TemplateResponse(
         "book.wid", {"request": {}, "books_by_student": books_by_student, "user": user}
     )

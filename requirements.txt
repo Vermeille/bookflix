@@ -6,4 +6,3 @@ pyzbar
 Pillow
 passlib
 isbnlib
-easyocr
