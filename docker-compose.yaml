@@ -15,5 +15,5 @@ services:
     environment:
       - PYTHONDONTWRITEBYTECODE=1  # Prevents Python from writing .pyc files
       - PYTHONUNBUFFERED=1  # Ensures output is displayed in the console in real-time
-    command: bash -c "apt update && apt install -y libzbar-dev && pip install --upgrade -r requirements.txt && fastapi dev --help && fastapi dev --host 0.0.0.0 etagere/main.py"
+    command: bash -c "apt update && apt install -y zbar-tools && pip install --upgrade -r requirements.txt && fastapi dev --help && fastapi dev --host 0.0.0.0 etagere/main.py"
 
