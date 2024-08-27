@@ -13,7 +13,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import RedirectResponse, HTMLResponse
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
-from etagere import models, crud, database, auth, camera
+from bookflix import models, crud, database, auth, camera
 from pathlib import Path
 import urllib
 import json
@@ -91,7 +91,7 @@ def login_post_by_photo(
     photo: UploadFile = File(...),
     db: Session = Depends(database.get_db),
 ):
-    image_path = f"etagere/uploads/{photo.filename}"
+    image_path = f"bookflix/uploads/{photo.filename}"
     with open(image_path, "wb") as f:
         f.write(photo.file.read())
     auth = camera.scan_barcode(image_path)
@@ -174,7 +174,7 @@ def borrow_book_by_photo(
     if user is None:
         raise HTTPException(status_code=401, detail="Not authenticated")
 
-    image_path = f"etagere/uploads/{photo.filename}"
+    image_path = f"bookflix/uploads/{photo.filename}"
     with open(image_path, "wb") as f:
         f.write(photo.file.read())
     isbn = camera.scan_barcode(image_path)

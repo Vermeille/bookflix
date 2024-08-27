@@ -2,7 +2,7 @@ from typing import Annotated
 from passlib.context import CryptContext
 from fastapi import Depends, HTTPException, status, Cookie
 from sqlalchemy.orm import Session
-from etagere import models, database
+from bookflix import models, database
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 

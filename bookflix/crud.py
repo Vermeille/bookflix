@@ -1,8 +1,8 @@
 import time
 from sqlalchemy.orm import Session
-from etagere import models
-from etagere.auth import get_password_hash
-from etagere.book_utils import get_book_info_by_isbn, canonical_isbn
+from bookflix import models
+from bookflix.auth import get_password_hash
+from bookflix.book_utils import get_book_info_by_isbn, canonical_isbn
 
 ###########
 # book
