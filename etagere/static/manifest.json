@@ -1,0 +1,25 @@
+{
+  "dir" : "ltr",
+  "lang" : "fr",
+  "name" : "Bookflix",
+  "scope" : "/",
+  "display" : "standalone",
+  "start_url" : "/",
+  "short_name" : "Bookflix",
+  "theme_color" : "#435a3f",
+  "description" : "Bookflix pour Aurélie Sanchez Teri",
+  "orientation" : "natural",
+  "background_color" : "#ffffff",
+  "icons" : [
+    {
+        "src": "/static/bookflix-icon-1024.png",
+        "type": "image/png",
+        "sizes": "1024x1024"
+    },
+    {
+        "src": "/static/bookflix-icon-128.png",
+        "type": "image/png",
+        "sizes": "128x128"
+    }
+  ]
+}

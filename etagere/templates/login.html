@@ -1,16 +1,18 @@
 {% extends "base.html" %}
 
 {% block content %}
-<h2>Login</h2>
-<form action="/login" method="post">
-    <label for="username">Username:</label>
-    <input type="text" id="username" name="username" required>
-    <label for="password">Password:</label>
-    <input type="password" id="password" name="password" required>
-    <button type="submit">Login</button>
-    <div>
-      <a href="/register">Register</a>
-    </div>
+<h2>Connection</h2>
+<form id="photoForm" action="/login/photo" method="POST" enctype="multipart/form-data">
+    <input type="file" id="camera" name="photo" accept="image/*" capture="environment" class="hidden-input">
+    <label for="camera" class="camera-icon">&#128247;</label>
 </form>
+<script>
+    document.getElementById('camera').addEventListener('change', function(event) {
+        const form = document.getElementById('photoForm');
+        if (event.target.files.length > 0) {
+            form.submit();
+        }
+    });
+</script>
 {% endblock %}
 

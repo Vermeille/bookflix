@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mon Étagère</title>
     <link rel="stylesheet" href="/static/style.css">
+    <link rel="icon" href="/static/bookflix-icon-128.png"></link>
 
     <style>
         body {
@@ -63,6 +64,38 @@
         button:active {
             background-color: #1f8f4d;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+            .user-card {
+            display: flex;
+            justify-content: space-between;
+            width: 300px;
+            padding: 20px;
+            margin: 10px auto;
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            transition: box-shadow 0.3s;
+        }
+
+        .user-card:hover {
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        .user-info {
+            flex: 1;
+            text-align: left;
+        }
+
+        .user-info h2 {
+            margin: 0;
+            font-size: 1.5em;
+            color: #333;
+        }
+
+        .user-qr img {
+            width: 150px;
+            height: 150px;
         }
     </style>
 </head>

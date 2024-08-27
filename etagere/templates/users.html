@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+
+{% block content %}
+{% for user in users %}
+    <div class="user-card">
+        <div class="user-info">
+            <h2>{{ user.username }}</h2>
+        </div>
+        <div class="user-qr">
+            <img src="{{ {"user":user.username, "passwd":user.username}|to_qr_code }}" alt="QR Code for {{ user.username }}">
+        </div>
+    </div>
+{% endfor %}
+{% endblock %}
+

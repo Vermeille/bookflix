@@ -1,6 +1,4 @@
-from os import stat
 from datetime import datetime
-from typing import Annotated
 from fastapi import (
     FastAPI,
     Depends,
@@ -10,18 +8,39 @@ from fastapi import (
     HTTPException,
     status,
     Form,
-    Cookie,
 )
+from fastapi.staticfiles import StaticFiles
 from fastapi.responses import RedirectResponse, HTMLResponse
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
-from etagere import models, crud, database, auth, camera, book_utils
+from etagere import models, crud, database, auth, camera
 from pathlib import Path
+import urllib
+import json
+import time
 
+
+def to_qr_code(data):
+    if isinstance(data, dict):
+        data = json.dumps(data)
+    url_encoded = urllib.parse.quote(data)
+    return f"https://api.qrserver.com/v1/create-qr-code/?size=150&data={url_encoded}&t={int(time.time())}"
+
+
+HERE = Path(__file__).parent
 app = FastAPI()
-templates = Jinja2Templates(directory=Path(__file__).parent / "templates")
+app.mount("/static", StaticFiles(directory=HERE / "static"), name="static")
+templates = Jinja2Templates(directory=HERE / "templates")
 templates.env.filters["showtime"] = datetime.fromtimestamp
+templates.env.filters["to_qr_code"] = to_qr_code
+
 models.Base.metadata.create_all(bind=database.engine)
+
+
+@app.get("/manifest.json")
+def manifest():
+    with open(HERE / "static" / "manifest.json") as f:
+        return json.load(f)
 
 
 ##### CREATE USERS #####
@@ -60,13 +79,29 @@ def login_post(
 ):
     user = auth.authenticate_user(db, username, password)
     if user is None:
-        raise HTTPException(
-            status_code=400,
-            detail="Could not register user (something is fucked in the code)",
-        )
+        return RedirectResponse("/", status_code=status.HTTP_303_SEE_OTHER)
+
     response = RedirectResponse("/books/my", status_code=status.HTTP_303_SEE_OTHER)
     response.set_cookie("Authorization", f"Bearer {user.username}")
     return response
+
+
+@app.post("/login/photo")
+def login_post_by_photo(
+    photo: UploadFile = File(...),
+    db: Session = Depends(database.get_db),
+):
+    image_path = f"etagere/uploads/{photo.filename}"
+    with open(image_path, "wb") as f:
+        f.write(photo.file.read())
+    auth = camera.scan_barcode(image_path)
+    if not auth:
+        raise HTTPException(status_code=400, detail="Could not read the barcode")
+    try:
+        auth = json.loads(auth)
+    except json.JSONDecodeError:
+        raise HTTPException(status_code=400, detail="Could not read the barcode")
+    return login_post(auth["user"], auth["passwd"], db)
 
 
 @app.get("/logout")
@@ -78,7 +113,8 @@ def logout():
 
 @app.get("/users")
 def users(db: Session = Depends(database.get_db)):
-    return crud.all_users(db)
+    users = crud.all_users(db)
+    return templates.TemplateResponse("users.html", {"request": {}, "users": users})
 
 
 ######
@@ -98,6 +134,7 @@ def books(
         student: [book for book in books if book.borrowed_by == student]
         for student in students
     }
+    del books_by_student[None]
     return templates.TemplateResponse(
         "book.wid", {"request": {}, "books_by_student": books_by_student, "user": user}
     )
@@ -137,7 +174,7 @@ def borrow_book_by_photo(
     if user is None:
         raise HTTPException(status_code=401, detail="Not authenticated")
 
-    image_path = f"uploads/{photo.filename}"
+    image_path = f"etagere/uploads/{photo.filename}"
     with open(image_path, "wb") as f:
         f.write(photo.file.read())
     isbn = camera.scan_barcode(image_path)

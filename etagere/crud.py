@@ -21,6 +21,7 @@ def get_book_by_isbn(db: Session, isbn: str):
 
     book = db.query(models.Book).filter(models.Book.isbn == isbn).first()
     if not book:
+        print("book not cached", isbn)
         book_info = get_book_info_by_isbn(isbn)
         if not book_info:
             return None
