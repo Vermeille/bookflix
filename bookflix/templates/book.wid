@@ -4,27 +4,23 @@
 <h2>Bonjour, {{ user.username }}</h2>
 
 <hr>
-{% for student, books in books_by_student.items() %}
-  <h3>🧑‍🎓{{ student.username if student.username else "Libre" }}</h3>
+<hr>
+{% for book in books %}
+  {% if book.cover_url %}
+    <img src="{{ book.cover_url }}"><br>
+  {% else %}
+    <img src="https://covers.openlibrary.org/b/isbn/{{book.isbn}}-M.jpg"><br>
+  {% endif %}
+
+  <h2>{{ book.title }}</h2>
+  <h3>{{ book.author }}</h3>
+
+  {% if book.borrowed_by %}
+    Emprunté par {{ book.borrowed_by.username }} le {{ book.borrowed_time|showtime }}
+  {% else %}
+    Libre
+  {% endif %}
   <hr>
-  {% for book in books %}
-    {% if book.cover_url %}
-      <img src="{{ book.cover_url }}"><br>
-    {% else %}
-      <img src="https://covers.openlibrary.org/b/isbn/{{book.isbn}}-M.jpg"><br>
-    {% endif %}
-
-    <h2>{{ book.title }}</h2>
-    <h3>{{ book.author }}</h3>
-
-    {% if book.borrowed_by %}
-      Emprunté par {{ book.borrowed_by.username }} le {{ book.borrowed_time|showtime }}
-    {% else %}
-      Libre
-    {% endif %}
-    <hr>
-
-  {% endfor %}
 {% endfor %}
 
 <form id="photoForm" action="/books/photo" method="POST" enctype="multipart/form-data">
@@ -39,10 +35,6 @@
         }
     });
 </script>
-{% if user.username == "admin" %}
-  <a href="/" class="camera-icon">🔙</a>
-{% else %}
-  <a href="/logout" class="camera-icon">&#128682;</a>
-{% endif %}
+<a href="/logout" class="camera-icon">&#128682;</a>
 {% endblock %}
 

@@ -10,6 +10,8 @@ from bookflix.book_utils import get_book_info_by_isbn, canonical_isbn
 
 
 def add_book(db: Session, isbn: str, title: str, author: str, cover_url: str):
+    isbn = canonical_isbn(isbn)
+
     book = models.Book(isbn=isbn, title=title, author=author, cover_url=cover_url)
     db.add(book)
     db.commit()

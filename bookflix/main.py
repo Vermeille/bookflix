@@ -142,9 +142,13 @@ def books(
         student: [book for book in books if book.borrowed_by == student]
         for student in students
     }
-    books_by_student.pop(None, None)
     return templates.TemplateResponse(
-        "book.wid", {"request": {}, "books_by_student": books_by_student, "user": user}
+        "books_admin.html",
+        {
+            "request": {},
+            "books_by_student": books_by_student,
+            "users": crud.all_users(db),
+        },
     )
 
 
@@ -158,12 +162,17 @@ def borrow_book(
     isbn: str,
     db: Session = Depends(database.get_db),
     user: models.Student = Depends(auth.cookie_verify),
+    force_user: str = None,
 ):
     if user is None:
         raise HTTPException(status_code=401, detail="Not authenticated")
     book = crud.get_book_by_isbn(db, isbn)
     if not book:
         raise HTTPException(status_code=404, detail="Book not found")
+    if user.username == "admin" and force_user:
+        user = crud.get_student_by_username(db, force_user)
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
     crud.borrow_book(db, user, book)
     return RedirectResponse("/books/my")
 
@@ -223,9 +232,12 @@ def my_books(
     if user is None:
         raise HTTPException(status_code=401, detail="Not authenticated")
 
+    if user.username == "admin":
+        return RedirectResponse("/books", status_code=status.HTTP_303_SEE_OTHER)
+
     books = crud.my_books(db, user)
     return templates.TemplateResponse(
-        "book.wid", {"request": {}, "books_by_student": {user: books}, "user": user}
+        "book.wid", {"request": {}, "books": books, "user": user}
     )
 
 

@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+
+{% macro choose_student(book, users) %}
+<form method="GET" action="/books/borrow/{{ book.isbn }}">
+  <select name="force_user" onchange="this.form.submit()">
+    {% if not book.borrowed_by %}
+      <option value="" selected>Libre</option>
+    {% endif %}
+
+    {% for user in users %}
+      {% if user.username != 'admin' %}
+        <option value="{{ user.username }}" {% if user == book.borrowed_by %}selected{% endif %}>{{ user.username }}</option>
+      {% endif %}
+    {% endfor %}
+  </select>
+</form>
+{% endmacro %}
+
+{% block content %}
+<h2>Bonjour Maîtresse</h2>
+
+<hr>
+{% for student, books in books_by_student.items() %}
+  <h3>🧑‍🎓{{ student.username if student.username else "Libre" }}</h3>
+  <hr>
+  {% for book in books %}
+    {% if book.cover_url %}
+      <img src="{{ book.cover_url }}"><br>
+    {% else %}
+      <img src="https://covers.openlibrary.org/b/isbn/{{book.isbn}}-M.jpg"><br>
+    {% endif %}
+
+    <h2>{{ book.title }}</h2>
+    <h3>{{ book.author }}</h3>
+
+    {% if book.borrowed_by %}
+      Emprunté par {{ book.borrowed_by.username }} le {{ book.borrowed_time|showtime }}
+      <br>
+      {{ choose_student(book, users) }}
+      <a href="/books/return/{{ book.isbn }}">Rendu</a>
+    {% else %}
+      {{ choose_student(book, users) }}
+    {% endif %}
+    <hr>
+
+  {% endfor %}
+{% endfor %}
+
+<form id="photoForm" action="/books/photo" method="POST" enctype="multipart/form-data">
+    <input type="file" id="camera" name="photo" accept="image/*" capture="environment" class="hidden-input">
+    <label for="camera" class="camera-icon">&#128247;</label>
+</form>
+<script>
+    document.getElementById('camera').addEventListener('change', function(event) {
+        const form = document.getElementById('photoForm');
+        if (event.target.files.length > 0) {
+            form.submit();
+        }
+    });
+</script>
+<a href="/" class="camera-icon">🔙</a>
+{% endblock %}
+
