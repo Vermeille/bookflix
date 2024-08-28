@@ -58,7 +58,7 @@ def register_user(
     user = crud.add_user(db, username, password)
     if user is None:
         raise HTTPException(status_code=400, detail="Could not register")
-    return login_post(username, password, db)
+    return RedirectResponse("/")
 
 
 ###################
@@ -81,7 +81,10 @@ def login_post(
     if user is None:
         return RedirectResponse("/", status_code=status.HTTP_303_SEE_OTHER)
 
-    response = RedirectResponse("/books/my", status_code=status.HTTP_303_SEE_OTHER)
+    if user.username == "admin":
+        response = RedirectResponse("/admin", status_code=status.HTTP_303_SEE_OTHER)
+    else:
+        response = RedirectResponse("/books/my", status_code=status.HTTP_303_SEE_OTHER)
     response.set_cookie("Authorization", f"Bearer {user.username}")
     return response
 
@@ -127,6 +130,11 @@ def books(
     db: Session = Depends(database.get_db),
     user: models.Student | None = Depends(auth.cookie_verify),
 ):
+    if user is None:
+        return RedirectResponse("/", status_code=status.HTTP_303_SEE_OTHER)
+    if user.username != "admin":
+        return RedirectResponse("/books/my", status_code=status.HTTP_303_SEE_OTHER)
+
     books = crud.all_books(db)
     students = list(book.borrowed_by for book in books)
     students.sort(key=lambda x: x.username if x else "zzzzzzzzzzzzzzzz")
@@ -225,11 +233,27 @@ def my_books(
 
 
 @app.get("/users")
-def users(db: Session = Depends(database.get_db)):
-    users = crud.all_users(db)
+def users(
+    db: Session = Depends(database.get_db),
+    user: models.Student = Depends(auth.cookie_verify),
+):
+    if user is None or user.username != "admin":
+        return RedirectResponse("/", status_code=status.HTTP_303_SEE_OTHER)
+
     return templates.TemplateResponse(
         "users.html", {"request": {}, "users": crud.all_users(db)}
     )
+
+
+@app.get("/admin")
+def admin(
+    db: Session = Depends(database.get_db),
+    user: models.Student = Depends(auth.cookie_verify),
+):
+    if user is None or user.username != "admin":
+        return RedirectResponse("/", status_code=status.HTTP_303_SEE_OTHER)
+
+    return templates.TemplateResponse("admin.html", {"request": {}})
 
 
 @app.get("/")
@@ -240,5 +264,7 @@ def read_root(
         return templates.TemplateResponse(
             "login.html", {"request": request, "user": current_user}
         )
+    elif current_user.username == "admin":
+        return RedirectResponse("/admin")
     else:
         return RedirectResponse("/books/my")

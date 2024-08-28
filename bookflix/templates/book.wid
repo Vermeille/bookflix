@@ -5,7 +5,7 @@
 
 <hr>
 {% for student, books in books_by_student.items() %}
-  <h3>{{ student.username if student.username else "Libre" }}</h3>
+  <h3>🧑‍🎓{{ student.username if student.username else "Libre" }}</h3>
   <hr>
   {% for book in books %}
     {% if book.cover_url %}
@@ -39,6 +39,10 @@
         }
     });
 </script>
-<a href="/logout" class="camera-icon">&#128682;</a>
+{% if user.username == "admin" %}
+  <a href="/" class="camera-icon">🔙</a>
+{% else %}
+  <a href="/logout" class="camera-icon">&#128682;</a>
+{% endif %}
 {% endblock %}
 
