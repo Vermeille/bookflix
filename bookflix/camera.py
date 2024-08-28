@@ -25,10 +25,10 @@ def scan_barcode(image_path):
             if barcodes:
                 img_blurred.save(image_path)
                 # move to uploads/worked/ folder
-                os.makedirs("bookflix/uploads/worked", exist_ok=True)
+                os.makedirs("uploads/worked", exist_ok=True)
                 os.rename(
                     image_path,
-                    f"bookflix/uploads/worked/{os.path.basename(image_path)}",
+                    f"uploads/worked/{os.path.basename(image_path)}",
                 )
                 return barcodes[0].data.decode("utf-8")
 
@@ -38,15 +38,15 @@ def scan_barcode(image_path):
             if barcodes:
                 img_blurred.save(image_path)
                 # move to uploads/worked/ folder
-                os.makedirs("bookflix/uploads/worked", exist_ok=True)
+                os.makedirs("uploads/worked", exist_ok=True)
                 os.rename(
                     image_path,
-                    f"bookflix/uploads/worked/{os.path.basename(image_path)}",
+                    f"uploads/worked/{os.path.basename(image_path)}",
                 )
                 return barcodes[0].data.decode("utf-8")
-    os.makedirs("bookflix/uploads/failed", exist_ok=True)
-    os.rename(image_path, f"bookflix/uploads/failed/{os.path.basename(image_path)}")
+    os.makedirs("uploads/failed", exist_ok=True)
+    os.rename(image_path, f"uploads/failed/{os.path.basename(image_path)}")
 
-    # result = reader.readtext( f"bookflix/uploads/failed/{os.path.basename(image_path)}", detail=0)
+    # result = reader.readtext( f"uploads/failed/{os.path.basename(image_path)}", detail=0)
     # print(result)
     return None

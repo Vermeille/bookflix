@@ -1,9 +1,8 @@
 {% extends "base.html" %}
 
 {% block content %}
-<h2>Bonjour, {{ user.username }}</h2>
+<h2>Bonjour {{ user.username }},</h2>
 
-<hr>
 <hr>
 {% for book in books %}
   {% if book.cover_url %}
@@ -35,6 +34,10 @@
         }
     });
 </script>
+<form action="/books/isbn" method="POST">
+    <input type="number" name="isbn" placeholder="ISBN" pattern="[\d \-]+" required>
+    <button type="submit">Valider</button>
+</form>
 <a href="/logout" class="camera-icon">&#128682;</a>
 {% endblock %}
 

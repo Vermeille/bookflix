@@ -154,7 +154,9 @@ def books(
 
 @app.get("/books/borrow")
 def borrow_book_query(isbn: str):
-    return RedirectResponse(f"/books/borrow/{isbn}")
+    return RedirectResponse(
+        f"/books/borrow/{isbn}", status_code=status.HTTP_303_SEE_OTHER
+    )
 
 
 @app.get("/books/borrow/{isbn}")
@@ -169,17 +171,19 @@ def borrow_book(
     book = crud.get_book_by_isbn(db, isbn)
     if not book:
         raise HTTPException(status_code=404, detail="Book not found")
-    if user.username == "admin" and force_user:
+    if user.username == "admin" and force_user not in [None, ""]:
         user = crud.get_student_by_username(db, force_user)
         if not user:
             raise HTTPException(status_code=404, detail="User not found")
     crud.borrow_book(db, user, book)
-    return RedirectResponse("/books/my")
+    return RedirectResponse("/books/my", status_code=status.HTTP_303_SEE_OTHER)
 
 
 @app.get("/books/return")
 def borrow_book_query(isbn: str):
-    return RedirectResponse(f"/books/return/{isbn}")
+    return RedirectResponse(
+        f"/books/return/{isbn}", status_code=status.HTTP_303_SEE_OTHER
+    )
 
 
 @app.post("/books/photo")
@@ -197,6 +201,15 @@ def borrow_book_by_photo(
     isbn = camera.scan_barcode(image_path)
     if not isbn:
         raise HTTPException(status_code=400, detail="Could not read the barcode")
+    return borrow_book_by_isbn(isbn, user, db)
+
+
+@app.post("/books/isbn")
+def borrow_book_by_isbn(
+    isbn: str = Form(...),
+    user: models.Student = Depends(auth.cookie_verify),
+    db: Session = Depends(database.get_db),
+):
     book = crud.get_book_by_isbn(db, isbn)
 
     if book.borrowed_by == user:
@@ -221,7 +234,7 @@ def return_book(
     if not book:
         raise HTTPException(status_code=404, detail="Book not found")
     crud.return_book(db, book)
-    return RedirectResponse("/books/my")
+    return RedirectResponse("/books/my", status_code=status.HTTP_303_SEE_OTHER)
 
 
 @app.get("/books/my")
@@ -237,7 +250,7 @@ def my_books(
 
     books = crud.my_books(db, user)
     return templates.TemplateResponse(
-        "book.wid", {"request": {}, "books": books, "user": user}
+        "book.html", {"request": {}, "books": books, "user": user}
     )
 
 
@@ -277,6 +290,6 @@ def read_root(
             "login.html", {"request": request, "user": current_user}
         )
     elif current_user.username == "admin":
-        return RedirectResponse("/admin")
+        return RedirectResponse("/admin", status_code=status.HTTP_303_SEE_OTHER)
     else:
-        return RedirectResponse("/books/my")
+        return RedirectResponse("/books/my", status_code=status.HTTP_303_SEE_OTHER)
