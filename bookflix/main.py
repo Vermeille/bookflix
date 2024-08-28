@@ -58,7 +58,7 @@ def register_user(
     user = crud.add_user(db, username, password)
     if user is None:
         raise HTTPException(status_code=400, detail="Could not register")
-    return RedirectResponse("/")
+    return RedirectResponse("/", status_code=status.HTTP_303_SEE_OTHER)
 
 
 ###################
@@ -94,7 +94,7 @@ def login_post_by_photo(
     photo: UploadFile = File(...),
     db: Session = Depends(database.get_db),
 ):
-    image_path = f"bookflix/uploads/{photo.filename}"
+    image_path = f"uploads/{photo.filename}"
     with open(image_path, "wb") as f:
         f.write(photo.file.read())
     auth = camera.scan_barcode(image_path)
@@ -182,7 +182,7 @@ def borrow_book_by_photo(
     if user is None:
         raise HTTPException(status_code=401, detail="Not authenticated")
 
-    image_path = f"bookflix/uploads/{photo.filename}"
+    image_path = f"uploads/{photo.filename}"
     with open(image_path, "wb") as f:
         f.write(photo.file.read())
     isbn = camera.scan_barcode(image_path)
