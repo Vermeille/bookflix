@@ -66,13 +66,15 @@
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
         }
 
-            .user-card {
+        .user-card {
             display: flex;
             justify-content: space-between;
-            width: 300px;
+            width: 85mm;
+            height: 55mm;
             padding: 20px;
             margin: 10px auto;
             background-color: #fff;
+            border: 1px solid #ddd;
             border-radius: 10px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
             transition: box-shadow 0.3s;
@@ -94,12 +96,35 @@
         }
 
         .user-qr img {
-            width: 150px;
-            height: 150px;
+            height: 80%;
+            margin-top: 10%;
         }
         .banner {
             height: 6em;
         }
+
+        @media print {
+            .user-card {
+                box-shadow: 0 0 0;
+                transition: 0 none;
+                margin: 0;
+            }
+            .banner {
+                display: none;
+            }
+            footer {
+                display: none;
+            }
+            .camera-icon {
+                display: none;
+            }
+            body {
+                background-color: white;
+                text-align: left;
+                padding: 0;
+            }
+        }
+
     </style>
 </head>
 <body>

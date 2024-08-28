@@ -5,6 +5,12 @@
     <div class="user-card">
         <div class="user-info">
             <h2>{{ user.username }}</h2>
+            <p>Emprunter ou rendre un livre:</p>
+            <p>
+            &#128247; Scanner sa carte<br>
+            &#128247; Photographier le code barre du livre<br>
+            &#128682; Se déconnecter <br>
+            </p>
         </div>
         <div class="user-qr">
             <img src="{{ {"user":user.username, "passwd":user.username}|to_qr_code }}" alt="QR Code for {{ user.username }}">
