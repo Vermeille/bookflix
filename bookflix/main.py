@@ -92,6 +92,28 @@ def login_post(
     return response
 
 
+@app.post("/login-as")
+def loginas(
+    user=Form(...),
+    db: Session = Depends(database.get_db),
+):
+    user = crud.get_student_by_username(db, user)
+    if user is None:
+        raise HTTPException(status_code=404, detail="User not found")
+    response = RedirectResponse("/", status_code=status.HTTP_303_SEE_OTHER)
+    response.set_cookie("Authorization", f"Bearer {user.username}")
+    return response
+
+
+@app.get("/login-as")
+def loginas_get(
+    db: Session = Depends(database.get_db),
+):
+    return templates.TemplateResponse(
+        "loginas.html", {"request": {}, "users": crud.all_users(db)}
+    )
+
+
 @app.post("/login/photo")
 def login_post_by_photo(
     photo: UploadFile = File(...),
