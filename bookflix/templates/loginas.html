@@ -4,6 +4,7 @@
 <h1>Se connecter en tant que</h1>
 <form method="POST" action="/login-as">
   <select name="user" onchange="this.form.submit()">
+    <option value="">--</option>
     {% for user in users %}
       <option value="{{ user.username }}">{{ user.username }}</option>
     {% endfor %}
