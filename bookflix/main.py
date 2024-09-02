@@ -18,6 +18,7 @@ from pathlib import Path
 import urllib
 import json
 import time
+import os
 
 
 def to_qr_code(data):
@@ -35,6 +36,8 @@ templates.env.filters["showtime"] = datetime.fromtimestamp
 templates.env.filters["to_qr_code"] = to_qr_code
 
 models.Base.metadata.create_all(bind=database.engine)
+
+os.makedirs("uploads", exist_ok=True)
 
 
 @app.get("/manifest.json")

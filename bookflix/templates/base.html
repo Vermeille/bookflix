@@ -129,12 +129,58 @@
             }
         }
 
+
     </style>
+    <style>
+  /* Full-page overlay */
+  .loader-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(128, 128, 128, 0.7); /* Grey with transparency */
+    z-index: 9999; /* High z-index to cover everything */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    visibility: hidden; /* Hidden by default */
+  }
+
+  /* Spinner design */
+  .loader-spinner {
+    border: 8px solid #f3f3f3; /* Light grey */
+    border-top: 8px solid #3498db; /* Blue */
+    border-radius: 50%;
+    width: 60px;
+    height: 60px;
+    animation: spin 1s linear infinite;
+  }
+
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+</style>
+    <script>
+  // Function to show the loader
+  function showLoader() {
+    document.querySelector('.loader-overlay').style.visibility = 'visible';
+  }
+
+  // Function to hide the loader (optional if you want to hide it manually)
+  function hideLoader() {
+    document.querySelector('.loader-overlay').style.visibility = 'hidden';
+  }
+  </script>
 </head>
 <body>
     <header>
         <img class="banner" src="/static/bookflix-banner.png" alt="Bookflix logo">
     </header>
+    <div class="loader-overlay">
+      <div class="loader-spinner"></div>
+    </div>
 
     <main>
         {% block content %}{% endblock %}

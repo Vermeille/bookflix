@@ -31,6 +31,7 @@
         const form = document.getElementById('photoForm');
         if (event.target.files.length > 0) {
             form.submit();
+            showLoader();
         }
     });
 </script>
