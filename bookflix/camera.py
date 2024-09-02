@@ -13,11 +13,11 @@ def scan_barcode(image_path):
     # max center crop
     img = ImageOps.exif_transpose(img)
     img = ImageOps.autocontrast(img)
-    for size in range(1, 15):
-        img_scaled = ImageOps.fit(
+    for size in range(2, 6):
+        img_scaled = ImageOps.cover(
             img, (size * 128, size * 128), Image.Resampling.BILINEAR
         )
-        for sharpness in [1, 0.5, 2, 0.2, 5]:
+        for sharpness in [1, 0.5, 2]:
             img_blurred = ImageEnhance.Sharpness(img_scaled.copy()).enhance(sharpness)
 
             barcodes = decode(img_blurred)
