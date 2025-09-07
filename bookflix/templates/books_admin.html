@@ -85,7 +85,7 @@
                 document.body.appendChild(form);
                 form.submit();
                 showLoader();
-            } else if (err && !(err instanceof ZXingBrowser.NotFoundException)) {
+            } else if (err && err.name !== 'NotFoundException') {
                 console.error('Camera/decoder error:', err);
             }
         });
