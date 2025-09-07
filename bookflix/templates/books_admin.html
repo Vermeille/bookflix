@@ -53,11 +53,22 @@
   {% endfor %}
 {% endfor %}
 
-<video id="preview" width="300" height="200"></video>
+<video id="preview" width="300" height="200" autoplay playsinline muted></video>
 <script src="https://unpkg.com/@zxing/browser@latest"></script>
 <script>
     window.addEventListener('load', () => {
         const previewElem = document.getElementById('preview');
+        // Ensure autoplay policy allows playback in PWA
+        previewElem.muted = true;
+        previewElem.setAttribute('muted', '');
+        previewElem.setAttribute('playsinline', '');
+        previewElem.setAttribute('autoplay', '');
+        // If autoplay is still blocked, a tap will resume playback
+        previewElem.addEventListener('click', () => {
+            if (previewElem.paused) {
+                previewElem.play().catch(() => {});
+            }
+        }, { once: false });
         const codeReader = new ZXingBrowser.BrowserMultiFormatReader();
         codeReader.decodeFromConstraints({ video: { facingMode: 'environment' } }, previewElem, (result, err, controls) => {
             if (result) {
@@ -74,6 +85,8 @@
                 document.body.appendChild(form);
                 form.submit();
                 showLoader();
+            } else if (err && !(err instanceof ZXingBrowser.NotFoundException)) {
+                console.error('Camera/decoder error:', err);
             }
         });
     });

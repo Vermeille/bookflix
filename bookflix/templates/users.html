@@ -17,9 +17,9 @@
         </div>
     </div>
     {% if user.username != 'admin' %}
-    <form class="noprint" method="post" action="/users/delete/{{ user.username }}" onsubmit="return confirm('Supprimer l\'utilisateur {{ user.username }} ?');">
-        <button type="submit" style="background-color:#e74c3c">🗑️ Supprimer {{ user.username }}</button>
-    </form>
+      <form class="noprint" method="post" action="/users/delete/{{ user.username }}" onsubmit="return confirm('Supprimer l\'utilisateur {{ user.username }} ?');">
+          <button type="submit" style="background-color:#e74c3c">🗑️ Supprimer {{ user.username }}</button>
+      </form>
     {% endif %}
 {% endfor %}
   <a href="/register" class="camera-icon">+</a>
