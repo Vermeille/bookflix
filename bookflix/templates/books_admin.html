@@ -2,6 +2,7 @@
 
 {% macro choose_student(book, users) %}
 <form method="GET" action="/books/borrow/{{ book.isbn }}">
+  Transférer à:
   <select name="force_user" onchange="this.form.submit()">
     {% if not book.borrowed_by %}
       <option value="" selected>Libre</option>
