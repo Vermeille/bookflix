@@ -222,6 +222,20 @@ def return_book(
     return RedirectResponse("/books/my", status_code=status.HTTP_303_SEE_OTHER)
 
 
+@app.post("/books/delete/{isbn}")
+def delete_book(
+    isbn: str,
+    db: Session = Depends(database.get_db),
+    user: models.Student | None = Depends(auth.cookie_verify),
+):
+    if user is None or user.username != "admin":
+        raise HTTPException(status_code=401, detail="Not authorized")
+    deleted = crud.delete_book_by_isbn(db, isbn)
+    if not deleted:
+        raise HTTPException(status_code=404, detail="Book not found")
+    return RedirectResponse("/books", status_code=status.HTTP_303_SEE_OTHER)
+
+
 @app.get("/books/my")
 def my_books(
     db: Session = Depends(database.get_db),

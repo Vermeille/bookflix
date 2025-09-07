@@ -56,6 +56,17 @@ def return_book(db: Session, book: models.Book):
     db.commit()
 
 
+def delete_book_by_isbn(db: Session, isbn: str) -> bool:
+    """Delete a book by its ISBN. Returns True if deleted, False if not found."""
+    isbn = canonical_isbn(isbn)
+    book = db.query(models.Book).filter(models.Book.isbn == isbn).first()
+    if not book:
+        return False
+    db.delete(book)
+    db.commit()
+    return True
+
+
 ################
 # USER CRUD
 ################

@@ -38,8 +38,14 @@
       <br>
       {{ choose_student(book, users) }}
       <a href="/books/return/{{ book.isbn }}">Rendu</a>
+      <form method="POST" action="/books/delete/{{ book.isbn }}" style="display:inline" onsubmit="return confirm('Supprimer ce livre ?')">
+        <button type="submit">🗑️ Supprimer</button>
+      </form>
     {% else %}
       {{ choose_student(book, users) }}
+      <form method="POST" action="/books/delete/{{ book.isbn }}" style="display:inline" onsubmit="return confirm('Supprimer ce livre ?')">
+        <button type="submit">🗑️ Supprimer</button>
+      </form>
     {% endif %}
     <hr>
 
@@ -73,4 +79,3 @@
 </script>
 <a href="/" class="camera-icon">🔙</a>
 {% endblock %}
-
