@@ -117,12 +117,6 @@ def logout():
     return response
 
 
-@app.get("/users")
-def users(db: Session = Depends(database.get_db)):
-    users = crud.all_users(db)
-    return templates.TemplateResponse("users.html", {"request": {}, "users": users})
-
-
 ######
 # books
 ######
@@ -267,6 +261,23 @@ def users(
     return templates.TemplateResponse(
         "users.html", {"request": {}, "users": crud.all_users(db)}
     )
+
+
+@app.post("/users/delete/{username}")
+def delete_user(
+    username: str,
+    db: Session = Depends(database.get_db),
+    user: models.Student = Depends(auth.cookie_verify),
+):
+    if user is None or user.username != "admin":
+        raise HTTPException(status_code=401, detail="Not authorized")
+
+    deleted = crud.delete_user_by_username(db, username)
+    if not deleted:
+        # Either not found or protected (e.g., admin)
+        raise HTTPException(status_code=404, detail="User not found or cannot be deleted")
+
+    return RedirectResponse("/users", status_code=status.HTTP_303_SEE_OTHER)
 
 
 @app.get("/admin")

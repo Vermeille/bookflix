@@ -90,3 +90,24 @@ def add_user(db: Session, username: str, password: str):
 
 def all_users(db: Session):
     return db.query(models.Student).all()
+
+
+def delete_user_by_username(db: Session, username: str) -> bool:
+    """Delete a user by username.
+    - Returns True if deleted, False if not found or protected.
+    - Clears any borrowed books to maintain referential integrity.
+    - Never deletes the special 'admin' user.
+    """
+    user = get_student_by_username(db, username)
+    if not user:
+        return False
+    if user.username == "admin":
+        return False
+
+    # Unassign borrowed books to avoid FK constraint issues
+    for book in list(user.borrowed_books):
+        book.borrowed_by = None
+
+    db.delete(user)
+    db.commit()
+    return True

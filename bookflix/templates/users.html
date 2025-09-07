@@ -11,6 +11,11 @@
             &#128247; Photographier le code barre du livre<br>
             &#128682; Se déconnecter <br>
             </p>
+            {% if user.username != 'admin' %}
+            <form method="post" action="/users/delete/{{ user.username }}" onsubmit="return confirm('Supprimer l\'utilisateur {{ user.username }} ?');">
+                <button type="submit" style="background-color:#e74c3c">🗑️ Supprimer</button>
+            </form>
+            {% endif %}
         </div>
         <div class="user-qr">
             <img src="{{ {"user":user.username, "passwd":user.username}|to_qr_code }}" alt="QR Code for {{ user.username }}">
@@ -21,4 +26,3 @@
   <br>
   <a href="/" class="camera-icon">🔙</a>
 {% endblock %}
-
