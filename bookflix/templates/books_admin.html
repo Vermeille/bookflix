@@ -46,16 +46,29 @@
   {% endfor %}
 {% endfor %}
 
-<form id="photoForm" action="/books/photo" method="POST" enctype="multipart/form-data">
-    <input type="file" id="camera" name="photo" accept="image/*" capture="environment" class="hidden-input">
-    <label for="camera" class="camera-icon">&#128247;</label>
-</form>
+<video id="preview" width="300" height="200"></video>
+<script src="https://unpkg.com/@zxing/browser@latest"></script>
 <script>
-    document.getElementById('camera').addEventListener('change', function(event) {
-        const form = document.getElementById('photoForm');
-        if (event.target.files.length > 0) {
-            form.submit();
-        }
+    window.addEventListener('load', () => {
+        const previewElem = document.getElementById('preview');
+        const codeReader = new ZXingBrowser.BrowserMultiFormatReader();
+        codeReader.decodeFromConstraints({ video: { facingMode: 'environment' } }, previewElem, (result, err, controls) => {
+            if (result) {
+                controls.stop();
+                const text = result.text || result.getText();
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = '/books/isbn';
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = 'isbn';
+                input.value = text;
+                form.appendChild(input);
+                document.body.appendChild(form);
+                form.submit();
+                showLoader();
+            }
+        });
     });
 </script>
 <a href="/" class="camera-icon">🔙</a>

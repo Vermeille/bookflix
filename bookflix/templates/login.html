@@ -2,17 +2,39 @@
 
 {% block content %}
 <h2>Connexion</h2>
-<form id="photoForm" action="/login/photo" method="POST" enctype="multipart/form-data">
-    <input type="file" id="camera" name="photo" accept="image/*" capture="environment" class="hidden-input">
-    <label for="camera" class="camera-icon">&#128247;</label>
-</form>
+<video id="preview" width="300" height="200"></video>
+<script src="https://unpkg.com/@zxing/browser@latest"></script>
 <script>
-    document.getElementById('camera').addEventListener('change', function(event) {
-        const form = document.getElementById('photoForm');
-        if (event.target.files.length > 0) {
-            form.submit();
-            showLoader();
-        }
+    window.addEventListener('load', () => {
+        const previewElem = document.getElementById('preview');
+        const codeReader = new ZXingBrowser.BrowserQRCodeReader();
+        codeReader.decodeFromConstraints({ video: { facingMode: 'environment' } }, previewElem, (result, err, controls) => {
+            if (result) {
+                controls.stop();
+                try {
+                    const text = result.text || result.getText();
+                    const data = JSON.parse(text);
+                    const form = document.createElement('form');
+                    form.method = 'POST';
+                    form.action = '/login';
+                    const user = document.createElement('input');
+                    user.type = 'hidden';
+                    user.name = 'username';
+                    user.value = data.user;
+                    const pass = document.createElement('input');
+                    pass.type = 'hidden';
+                    pass.name = 'password';
+                    pass.value = data.passwd;
+                    form.appendChild(user);
+                    form.appendChild(pass);
+                    document.body.appendChild(form);
+                    form.submit();
+                    showLoader();
+                } catch (e) {
+                    console.error(e);
+                }
+            }
+        });
     });
 </script>
 {% endblock %}

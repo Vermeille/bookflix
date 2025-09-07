@@ -3,8 +3,6 @@ from fastapi import (
     FastAPI,
     Depends,
     Request,
-    UploadFile,
-    File,
     HTTPException,
     status,
     Form,
@@ -13,12 +11,11 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import RedirectResponse, HTMLResponse
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
-from bookflix import models, crud, database, auth, camera
+from bookflix import models, crud, database, auth
 from pathlib import Path
 import urllib
 import json
 import time
-import os
 
 
 def to_qr_code(data):
@@ -37,7 +34,6 @@ templates.env.filters["to_qr_code"] = to_qr_code
 
 models.Base.metadata.create_all(bind=database.engine)
 
-os.makedirs("uploads", exist_ok=True)
 
 
 @app.get("/manifest.json")
@@ -112,24 +108,6 @@ def loginas_get(
     return templates.TemplateResponse(
         "loginas.html", {"request": {}, "users": crud.all_users(db)}
     )
-
-
-@app.post("/login/photo")
-def login_post_by_photo(
-    photo: UploadFile = File(...),
-    db: Session = Depends(database.get_db),
-):
-    image_path = f"uploads/{photo.filename}"
-    with open(image_path, "wb") as f:
-        f.write(photo.file.read())
-    auth = camera.scan_barcode(image_path)
-    if not auth:
-        raise HTTPException(status_code=400, detail="Could not read the barcode")
-    try:
-        auth = json.loads(auth)
-    except json.JSONDecodeError:
-        raise HTTPException(status_code=400, detail="Could not read the barcode")
-    return login_post(auth["user"], auth["passwd"], db)
 
 
 @app.get("/logout")
@@ -209,24 +187,6 @@ def borrow_book_query(isbn: str):
     return RedirectResponse(
         f"/books/return/{isbn}", status_code=status.HTTP_303_SEE_OTHER
     )
-
-
-@app.post("/books/photo")
-def borrow_book_by_photo(
-    photo: UploadFile = File(...),
-    user: models.Student = Depends(auth.cookie_verify),
-    db: Session = Depends(database.get_db),
-):
-    if user is None:
-        raise HTTPException(status_code=401, detail="Not authenticated")
-
-    image_path = f"uploads/{photo.filename}"
-    with open(image_path, "wb") as f:
-        f.write(photo.file.read())
-    isbn = camera.scan_barcode(image_path)
-    if not isbn:
-        raise HTTPException(status_code=400, detail="Could not read the barcode")
-    return borrow_book_by_isbn(isbn, user, db)
 
 
 @app.post("/books/isbn")
