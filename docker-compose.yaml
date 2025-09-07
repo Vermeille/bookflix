@@ -1,9 +1,6 @@
-version: '3.8'
-
 services:
-  web:
+  bookflix:
     image: python:3.11-slim  # Use the official Python image
-    container_name: library_app
     working_dir: /app
     volumes:
       - ./requirements.txt:/app/requirements.txt
@@ -12,9 +9,14 @@ services:
       - /app/bookflix/__pycache__  # Exclude __pycache__ from being copied to host
       - /app/venv  # Exclude venv directory
     ports:
-      - "8000:8000"  # Map port 8000 on the host to port 8000 in the container
+      - "8000"  # Map port 8000 on the host to port 8000 in the container
     environment:
       - PYTHONDONTWRITEBYTECODE=1  # Prevents Python from writing .pyc files
       - PYTHONUNBUFFERED=1  # Ensures output is displayed in the console in real-time
-    command: bash -c "apt update && apt install -y zbar-tools && pip install --upgrade -r requirements.txt && fastapi dev --help && fastapi dev --host 0.0.0.0 bookflix/main.py"
-
+    command: bash -c "pip install --upgrade -r requirements.txt && fastapi dev --help && fastapi dev --host 0.0.0.0 bookflix/main.py"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.services.bookflix.loadbalancer.server.port=8000"
+      - "traefik.http.routers.bookflix.rule=Host(`bookflix.vermeille.fr`)"
+      - "traefik.http.routers.bookflix.tls=true"
+      - "traefik.http.routers.bookflix.tls.certresolver=letsencrypt"

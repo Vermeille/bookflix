@@ -13,7 +13,6 @@ COPY ./requirements.txt /app/requirements.txt
 
 # Install dependencies and zbar-tools
 RUN apt-get update \
-    && apt-get install -y zbar-tools \
     && pip install --upgrade pip \
     && pip install --upgrade -r /app/requirements.txt
 
