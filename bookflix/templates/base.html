@@ -69,8 +69,9 @@
         .user-card {
             display: flex;
             justify-content: space-between;
-            width: 85mm;
-            height: 55mm;
+            /* ISO/IEC 7810 ID-1 (credit card) */
+            width: 85.6mm;
+            height: 54mm;
             padding: 20px;
             margin: 10px auto;
             background-color: #fff;
@@ -78,6 +79,9 @@
             border-radius: 10px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
             transition: box-shadow 0.3s;
+            box-sizing: border-box; /* ensure padding/border are inside physical size */
+            break-inside: avoid;
+            page-break-inside: avoid;
         }
 
         .user-card:hover {
@@ -103,11 +107,22 @@
             height: 6em;
         }
 
+        /* Ensure predictable page size and margins for printing */
+        @page {
+            size: A4;
+            margin: 10mm;
+        }
+
         @media print {
             .user-card {
                 box-shadow: 0 0 0;
                 transition: 0 none;
                 margin: 0;
+            }
+            /* Hide destructive actions from printed media */
+            .user-card form,
+            .user-card button {
+                display: none !important;
             }
             .banner {
                 display: none;
@@ -190,4 +205,3 @@
     </footer>
 </body>
 </html>
-
