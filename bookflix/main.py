@@ -46,7 +46,7 @@ def manifest():
 ##### CREATE USERS #####
 @app.get("/register")
 def register(request: Request):
-    return templates.TemplateResponse("register.html", {"request": request})
+    return templates.TemplateResponse(request, "register.html", {})
 
 
 @app.post("/register")
@@ -68,7 +68,7 @@ def register_user(
 
 @app.get("/login")
 def login_get(request: Request):
-    return templates.TemplateResponse("login.html", {"request": request})
+    return templates.TemplateResponse(request, "login.html", {})
 
 
 @app.post("/login")
@@ -104,10 +104,11 @@ def loginas(
 
 @app.get("/login-as")
 def loginas_get(
+    request: Request,
     db: Session = Depends(database.get_db),
 ):
     return templates.TemplateResponse(
-        "loginas.html", {"request": {}, "users": crud.all_users(db)}
+        request, "loginas.html", {"users": crud.all_users(db)}
     )
 
 
@@ -123,7 +124,7 @@ def logout():
 ######
 
 
-def admin_books_page(db: Session, error: str | None = None):
+def admin_books_page(request: Request, db: Session, error: str | None = None):
     books = crud.all_books(db)
     categories = crud.all_categories(db)
     borrowed_students = sorted(
@@ -146,9 +147,9 @@ def admin_books_page(db: Session, error: str | None = None):
         free_books_by_category[None] = uncategorized
 
     return templates.TemplateResponse(
+        request,
         "books_admin.html",
         {
-            "request": {},
             "books_by_student": books_by_student,
             "free_books_by_category": free_books_by_category,
             "categories": categories,
@@ -160,6 +161,7 @@ def admin_books_page(db: Session, error: str | None = None):
 
 @app.get("/books")
 def books(
+    request: Request,
     db: Session = Depends(database.get_db),
     user: models.Student | None = Depends(auth.cookie_verify),
 ):
@@ -168,7 +170,7 @@ def books(
     if user.username != "admin":
         return RedirectResponse("/books/my", status_code=status.HTTP_303_SEE_OTHER)
 
-    return admin_books_page(db)
+    return admin_books_page(request, db)
 
 
 @app.post("/categories/create")
@@ -302,6 +304,7 @@ def delete_book(
 
 @app.get("/books/my")
 def my_books(
+    request: Request,
     db: Session = Depends(database.get_db),
     user: models.Student = Depends(auth.cookie_verify),
 ):
@@ -313,7 +316,7 @@ def my_books(
 
     books = crud.my_books(db, user)
     return templates.TemplateResponse(
-        "book.html", {"request": {}, "books": books, "user": user}
+        request, "book.html", {"books": books, "user": user}
     )
 
 
@@ -322,6 +325,7 @@ def my_books(
 
 @app.get("/users")
 def users(
+    request: Request,
     db: Session = Depends(database.get_db),
     user: models.Student = Depends(auth.cookie_verify),
 ):
@@ -329,7 +333,7 @@ def users(
         return RedirectResponse("/", status_code=status.HTTP_303_SEE_OTHER)
 
     return templates.TemplateResponse(
-        "users.html", {"request": {}, "users": crud.all_users(db)}
+        request, "users.html", {"users": crud.all_users(db)}
     )
 
 
@@ -352,13 +356,14 @@ def delete_user(
 
 @app.get("/admin")
 def admin(
+    request: Request,
     db: Session = Depends(database.get_db),
     user: models.Student = Depends(auth.cookie_verify),
 ):
     if user is None or user.username != "admin":
         return RedirectResponse("/", status_code=status.HTTP_303_SEE_OTHER)
 
-    return templates.TemplateResponse("admin.html", {"request": {}})
+    return templates.TemplateResponse(request, "admin.html", {})
 
 
 @app.get("/")
@@ -366,9 +371,7 @@ def read_root(
     request: Request, current_user: models.Student = Depends(auth.cookie_verify)
 ):
     if current_user is None:
-        return templates.TemplateResponse(
-            "login.html", {"request": request, "user": current_user}
-        )
+        return templates.TemplateResponse(request, "login.html", {"user": current_user})
     elif current_user.username == "admin":
         return RedirectResponse("/admin", status_code=status.HTTP_303_SEE_OTHER)
     else:
