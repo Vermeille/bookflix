@@ -17,39 +17,72 @@
 </form>
 {% endmacro %}
 
+{% macro render_book(book, users, categories) %}
+  {% if book.cover_url %}
+    <img src="{{ book.cover_url }}"><br>
+  {% else %}
+    <img src="https://covers.openlibrary.org/b/isbn/{{book.isbn}}-M.jpg"><br>
+  {% endif %}
+
+  <h2>{{ book.title }}</h2>
+  <h3>{{ book.author }}</h3>
+  <form method="POST" action="/books/category/{{ book.isbn }}">
+    Catégorie:
+    <select name="category_id" onchange="this.form.submit()">
+      <option value="" {% if not book.category %}selected{% endif %}>Aucune</option>
+      {% for category in categories %}
+        <option value="{{ category.id }}" {% if category == book.category %}selected{% endif %}>{{ category.name }}</option>
+      {% endfor %}
+    </select>
+  </form>
+
+  {% if book.borrowed_by %}
+    Emprunté par {{ book.borrowed_by.username }} le {{ book.borrowed_time|showtime }}
+    <br>
+    {{ choose_student(book, users) }}
+    <a href="/books/return/{{ book.isbn }}">Rendu</a>
+  {% else %}
+    {{ choose_student(book, users) }}
+  {% endif %}
+  <form method="POST" action="/books/delete/{{ book.isbn }}" style="display:inline" onsubmit="return confirm('Supprimer ce livre ?')">
+    <button type="submit">🗑️ Supprimer</button>
+  </form>
+  <hr>
+{% endmacro %}
+
 {% block content %}
 <h2>Bonjour Maîtresse</h2>
+
+<form method="POST" action="/categories/create">
+  <input type="text" name="name" placeholder="Nouvelle catégorie" required>
+  <button type="submit">Créer la catégorie</button>
+</form>
+{% if error %}
+  <p>{{ error }}</p>
+{% endif %}
+{% if categories %}
+  <p>Catégories:</p>
+  {% for category in categories %}
+    {{ category.name }}
+    <form method="POST" action="/categories/delete/{{ category.id }}" style="display:inline" onsubmit="return confirm('Supprimer cette catégorie ?')">
+      <button type="submit">🗑️</button>
+    </form>
+  {% endfor %}
+{% endif %}
 
 <hr>
 {% for student, books in books_by_student.items() %}
   <h3>🧑‍🎓{{ student.username if student.username else "Libre" }}</h3>
   <hr>
   {% for book in books %}
-    {% if book.cover_url %}
-      <img src="{{ book.cover_url }}"><br>
-    {% else %}
-      <img src="https://covers.openlibrary.org/b/isbn/{{book.isbn}}-M.jpg"><br>
-    {% endif %}
-
-    <h2>{{ book.title }}</h2>
-    <h3>{{ book.author }}</h3>
-
-    {% if book.borrowed_by %}
-      Emprunté par {{ book.borrowed_by.username }} le {{ book.borrowed_time|showtime }}
-      <br>
-      {{ choose_student(book, users) }}
-      <a href="/books/return/{{ book.isbn }}">Rendu</a>
-      <form method="POST" action="/books/delete/{{ book.isbn }}" style="display:inline" onsubmit="return confirm('Supprimer ce livre ?')">
-        <button type="submit">🗑️ Supprimer</button>
-      </form>
-    {% else %}
-      {{ choose_student(book, users) }}
-      <form method="POST" action="/books/delete/{{ book.isbn }}" style="display:inline" onsubmit="return confirm('Supprimer ce livre ?')">
-        <button type="submit">🗑️ Supprimer</button>
-      </form>
-    {% endif %}
-    <hr>
-
+    {{ render_book(book, users, categories) }}
+  {% endfor %}
+{% endfor %}
+{% for category, books in free_books_by_category.items() %}
+  <h3>Libre{% if category %} — {{ category.name }}{% endif %}</h3>
+  <hr>
+  {% for book in books %}
+    {{ render_book(book, users, categories) }}
   {% endfor %}
 {% endfor %}
 

@@ -14,6 +14,14 @@ class Student(Base):
     borrowed_books = relationship("Book", back_populates="borrowed_by")
 
 
+class Category(Base):
+    __tablename__ = "categories"
+
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String(collation="NOCASE"), unique=True, nullable=False)
+    books = relationship("Book", back_populates="category")
+
+
 class Book(Base):
     __tablename__ = "books"
 
@@ -25,3 +33,5 @@ class Book(Base):
     borrowed_by_id = Column(Integer, ForeignKey("students.id"))
     borrowed_by = relationship("Student", back_populates="borrowed_books")
     borrowed_time = Column(Float)
+    category_id = Column(Integer, ForeignKey("categories.id"), nullable=True)
+    category = relationship("Category", back_populates="books")

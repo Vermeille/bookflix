@@ -1,4 +1,5 @@
 import time
+from sqlalchemy import func
 from sqlalchemy.orm import Session
 from bookflix import models
 from bookflix.auth import get_password_hash
@@ -7,6 +8,65 @@ from bookflix.book_utils import get_book_info_by_isbn, canonical_isbn
 ###########
 # book
 ###########
+
+
+def all_categories(db: Session):
+    return db.query(models.Category).order_by(models.Category.name).all()
+
+
+def add_category(db: Session, name: str):
+    name = name.strip()
+    if not name:
+        raise ValueError("Le nom de la catégorie est requis.")
+    if (
+        db.query(models.Category)
+        .filter(func.lower(models.Category.name) == name.lower())
+        .first()
+    ):
+        raise ValueError("Cette catégorie existe déjà.")
+
+    category = models.Category(name=name)
+    db.add(category)
+    db.commit()
+    db.refresh(category)
+    return category
+
+
+def delete_category(db: Session, category_id: int) -> bool:
+    category = db.query(models.Category).filter(models.Category.id == category_id).first()
+    if not category:
+        return False
+
+    for book in list(category.books):
+        book.category = None
+    db.delete(category)
+    db.commit()
+    return True
+
+
+def set_book_category(db: Session, isbn: str, category_id: str | None) -> bool:
+    isbn = canonical_isbn(isbn)
+    book = db.query(models.Book).filter(models.Book.isbn == isbn).first()
+    if not book:
+        return False
+
+    if category_id in [None, ""]:
+        book.category = None
+    else:
+        try:
+            category_id = int(category_id)
+        except (TypeError, ValueError):
+            raise ValueError("Catégorie invalide.")
+        category = (
+            db.query(models.Category)
+            .filter(models.Category.id == category_id)
+            .first()
+        )
+        if not category:
+            raise LookupError("Catégorie introuvable.")
+        book.category = category
+    db.commit()
+    return True
 
 
 def add_book(db: Session, isbn: str, title: str, author: str, cover_url: str):

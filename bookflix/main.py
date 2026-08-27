@@ -33,6 +33,7 @@ templates.env.filters["showtime"] = datetime.fromtimestamp
 templates.env.filters["to_qr_code"] = to_qr_code
 
 models.Base.metadata.create_all(bind=database.engine)
+database.upgrade_schema()
 
 
 
@@ -122,6 +123,41 @@ def logout():
 ######
 
 
+def admin_books_page(db: Session, error: str | None = None):
+    books = crud.all_books(db)
+    categories = crud.all_categories(db)
+    borrowed_students = sorted(
+        {book.borrowed_by for book in books if book.borrowed_by},
+        key=lambda student: student.username,
+    )
+    books_by_student = {
+        student: [book for book in books if book.borrowed_by == student]
+        for student in borrowed_students
+    }
+
+    free_books = [book for book in books if book.borrowed_by is None]
+    free_books_by_category = {
+        category: [book for book in free_books if book.category == category]
+        for category in categories
+        if any(book.category == category for book in free_books)
+    }
+    uncategorized = [book for book in free_books if book.category is None]
+    if uncategorized:
+        free_books_by_category[None] = uncategorized
+
+    return templates.TemplateResponse(
+        "books_admin.html",
+        {
+            "request": {},
+            "books_by_student": books_by_student,
+            "free_books_by_category": free_books_by_category,
+            "categories": categories,
+            "users": crud.all_users(db),
+            "error": error,
+        },
+    )
+
+
 @app.get("/books")
 def books(
     db: Session = Depends(database.get_db),
@@ -132,21 +168,55 @@ def books(
     if user.username != "admin":
         return RedirectResponse("/books/my", status_code=status.HTTP_303_SEE_OTHER)
 
-    books = crud.all_books(db)
-    students = list(book.borrowed_by for book in books)
-    students.sort(key=lambda x: x.username if x else "zzzzzzzzzzzzzzzz")
-    books_by_student = {
-        student: [book for book in books if book.borrowed_by == student]
-        for student in students
-    }
-    return templates.TemplateResponse(
-        "books_admin.html",
-        {
-            "request": {},
-            "books_by_student": books_by_student,
-            "users": crud.all_users(db),
-        },
-    )
+    return admin_books_page(db)
+
+
+@app.post("/categories/create")
+def create_category(
+    name: str = Form(...),
+    db: Session = Depends(database.get_db),
+    user: models.Student | None = Depends(auth.cookie_verify),
+):
+    if user is None or user.username != "admin":
+        raise HTTPException(status_code=401, detail="Not authorized")
+    try:
+        crud.add_category(db, name)
+    except ValueError as error:
+        return admin_books_page(db, str(error))
+    return RedirectResponse("/books", status_code=status.HTTP_303_SEE_OTHER)
+
+
+@app.post("/categories/delete/{category_id}")
+def delete_category(
+    category_id: int,
+    db: Session = Depends(database.get_db),
+    user: models.Student | None = Depends(auth.cookie_verify),
+):
+    if user is None or user.username != "admin":
+        raise HTTPException(status_code=401, detail="Not authorized")
+    if not crud.delete_category(db, category_id):
+        raise HTTPException(status_code=404, detail="Category not found")
+    return RedirectResponse("/books", status_code=status.HTTP_303_SEE_OTHER)
+
+
+@app.post("/books/category/{isbn}")
+def set_book_category(
+    isbn: str,
+    category_id: str = Form(""),
+    db: Session = Depends(database.get_db),
+    user: models.Student | None = Depends(auth.cookie_verify),
+):
+    if user is None or user.username != "admin":
+        raise HTTPException(status_code=401, detail="Not authorized")
+    try:
+        updated = crud.set_book_category(db, isbn, category_id)
+    except ValueError as error:
+        raise HTTPException(status_code=400, detail=str(error))
+    except LookupError as error:
+        raise HTTPException(status_code=404, detail=str(error))
+    if not updated:
+        raise HTTPException(status_code=404, detail="Book not found")
+    return RedirectResponse("/books", status_code=status.HTTP_303_SEE_OTHER)
 
 
 @app.get("/books/borrow")

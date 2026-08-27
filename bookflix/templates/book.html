@@ -13,6 +13,9 @@
 
   <h2>{{ book.title }}</h2>
   <h3>{{ book.author }}</h3>
+  {% if book.category %}
+    Catégorie: {{ book.category.name }}
+  {% endif %}
 
   {% if book.borrowed_by %}
     Emprunté par {{ book.borrowed_by.username }} le {{ book.borrowed_time|showtime }}
