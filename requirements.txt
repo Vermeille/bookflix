@@ -3,4 +3,4 @@ sqlalchemy
 jinja2
 python-multipart
 passlib
-isbnlib
+isbnlib2

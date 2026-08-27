@@ -13,6 +13,7 @@ services:
     environment:
       - PYTHONDONTWRITEBYTECODE=1  # Prevents Python from writing .pyc files
       - PYTHONUNBUFFERED=1  # Ensures output is displayed in the console in real-time
+      - GOOGLE_BOOKS_API_KEY=AIzaSyCJUtnv4PzBPzjOAvrtHthLOwGY7wC30oY
     command: bash -c "pip install --upgrade -r requirements.txt && fastapi dev --help && fastapi dev --host 0.0.0.0 bookflix/main.py"
     labels:
       - "traefik.enable=true"
