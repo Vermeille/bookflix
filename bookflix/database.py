@@ -1,15 +1,37 @@
-from sqlalchemy import create_engine
-from sqlalchemy import text
-from sqlalchemy.ext.declarative import declarative_base
+from __future__ import annotations
+
+import os
+
+from sqlalchemy import create_engine, inspect, text
+from sqlalchemy.engine import make_url
 from sqlalchemy.orm import sessionmaker
 
-SQLALCHEMY_DATABASE_URL = "sqlite:////app/library.db"
 
-engine = create_engine(
-    SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False}
-)
+def _required(name: str) -> str:
+    value = os.getenv(name, "").strip()
+    if not value:
+        raise RuntimeError(f"Missing required environment variable: {name}")
+    return value
+
+
+def _database_url():
+    url = make_url(_required("POSTGRES_URL"))
+
+    if url.drivername in {"postgres", "postgresql"}:
+        url = url.set(drivername="postgresql+psycopg")
+    elif url.drivername != "postgresql+psycopg":
+        raise RuntimeError(
+            "POSTGRES_URL must use the postgres:// or postgresql:// scheme"
+        )
+
+    return url.set(
+        username=_required("POSTGRES_USER"),
+        password=_required("POSTGRES_PASSWORD"),
+    )
+
+
+engine = create_engine(_database_url(), pool_pre_ping=True)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-Base = declarative_base()
 
 
 def get_db():
@@ -21,21 +43,10 @@ def get_db():
 
 
 def upgrade_schema():
-    """Apply the small SQLite schema changes needed by newer app versions."""
+    """Apply the small schema changes needed by newer app versions."""
     with engine.begin() as connection:
-        connection.execute(
-            text(
-                """
-                CREATE TABLE IF NOT EXISTS categories (
-                    id INTEGER NOT NULL PRIMARY KEY,
-                    name VARCHAR COLLATE NOCASE NOT NULL UNIQUE
-                )
-                """
-            )
-        )
-
         columns = {
-            row[1] for row in connection.execute(text("PRAGMA table_info(books)"))
+            column["name"] for column in inspect(connection).get_columns("books")
         }
         if "category_id" not in columns:
             connection.execute(
@@ -44,3 +55,10 @@ def upgrade_schema():
                     "INTEGER REFERENCES categories(id)"
                 )
             )
+
+        connection.execute(
+            text(
+                "CREATE UNIQUE INDEX IF NOT EXISTS uq_categories_name_lower "
+                "ON categories (LOWER(name))"
+            )
+        )

@@ -4,3 +4,4 @@ jinja2
 python-multipart
 passlib
 isbnlib2
+psycopg[binary]>=3.2,<4
