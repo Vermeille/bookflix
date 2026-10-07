@@ -18,7 +18,7 @@ class Category(Base):
     __tablename__ = "categories"
 
     id = Column(Integer, primary_key=True, index=True)
-    name = Column(String(collation="NOCASE"), unique=True, nullable=False)
+    name = Column(String, unique=True, nullable=False)
     books = relationship("Book", back_populates="category")
 
 
