@@ -15,13 +15,13 @@ def _required(name: str) -> str:
 
 
 def _database_url():
-    url = make_url(_required("DATABASE_URL"))
+    url = make_url(_required("POSTGRES_URL"))
 
     if url.drivername in {"postgres", "postgresql"}:
         url = url.set(drivername="postgresql+psycopg")
     elif url.drivername != "postgresql+psycopg":
         raise RuntimeError(
-            "DATABASE_URL must use the postgres://, postgresql:// or postgresql+psycopg:// scheme"
+            "POSTGRES_URL must use the postgres://, postgresql:// or postgresql+psycopg:// scheme"
         )
 
     return url
