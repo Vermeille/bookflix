@@ -13,9 +13,7 @@ services:
       - PYTHONDONTWRITEBYTECODE=1  # Prevents Python from writing .pyc files
       - PYTHONUNBUFFERED=1  # Ensures output is displayed in the console in real-time
       - GOOGLE_BOOKS_API_KEY=${GOOGLE_BOOKS_API_KEY}
-      - POSTGRES_URL=${POSTGRES_URL}
-      - POSTGRES_USER=${POSTGRES_USER}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - DATABASE_URL=${DATABASE_URL}
     command: bash -c "pip install --upgrade -r requirements.txt && fastapi dev --help && fastapi dev --host 0.0.0.0 bookflix/main.py"
     labels:
       - "traefik.enable=true"
