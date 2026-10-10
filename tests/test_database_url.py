@@ -5,10 +5,10 @@ from unittest.mock import patch
 
 class DatabaseURLTests(unittest.TestCase):
     def _database(self):
-        # Import after setting DATABASE_URL: the module constructs the Engine on import.
+        # Import after setting POSTGRES_URL: the module constructs the Engine on import.
         with patch.dict(
             os.environ,
-            {"DATABASE_URL": "postgresql://test:password@localhost:5432/bookflix_test"},
+            {"POSTGRES_URL": "postgresql://test:password@localhost:5432/bookflix_test"},
         ):
             from bookflix import database
         return database
@@ -18,7 +18,7 @@ class DatabaseURLTests(unittest.TestCase):
         with patch.dict(
             os.environ,
             {
-                "DATABASE_URL": (
+                "POSTGRES_URL": (
                     "postgresql://bookflix:p%40ss%2Fword@db.internal:5432/"
                     "bookflix?sslmode=require"
                 )
@@ -36,13 +36,13 @@ class DatabaseURLTests(unittest.TestCase):
     def test_missing_url(self):
         database = self._database()
         with patch.dict(os.environ, {}, clear=True):
-            with self.assertRaisesRegex(RuntimeError, "DATABASE_URL"):
+            with self.assertRaisesRegex(RuntimeError, "POSTGRES_URL"):
                 database._database_url()
 
     def test_reject_sqlite(self):
         database = self._database()
-        with patch.dict(os.environ, {"DATABASE_URL": "sqlite:///library.db"}):
-            with self.assertRaisesRegex(RuntimeError, "DATABASE_URL"):
+        with patch.dict(os.environ, {"POSTGRES_URL": "sqlite:///library.db"}):
+            with self.assertRaisesRegex(RuntimeError, "POSTGRES_URL"):
                 database._database_url()
 
 
