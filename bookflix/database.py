@@ -21,13 +21,10 @@ def _database_url():
         url = url.set(drivername="postgresql+psycopg")
     elif url.drivername != "postgresql+psycopg":
         raise RuntimeError(
-            "POSTGRES_URL must use the postgres:// or postgresql:// scheme"
+            "POSTGRES_URL must use the postgres://, postgresql:// or postgresql+psycopg:// scheme"
         )
 
-    return url.set(
-        username=_required("POSTGRES_USER"),
-        password=_required("POSTGRES_PASSWORD"),
-    )
+    return url
 
 
 engine = create_engine(_database_url(), pool_pre_ping=True)
